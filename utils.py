@@ -16,8 +16,9 @@ def make_pair(img_paths, label_paths):
 
     pairs = []
     for img_path, label_path in zip(sorted(img_paths), sorted(label_paths)):
-        if img_path.stem.replace("_leftImg8bit", "") is \
-                label_path.stem.replace("_gtFine_labelIds", ""):
+        img_stem = img_path.stem.replace("_leftImg8bit", "")
+        label_stem = label_path.stem.replace("_gtFine_labelIds", "")
+        if img_stem == label_stem:
             pair = (img_path, label_path)
             pairs.append(pair)
 

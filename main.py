@@ -12,7 +12,7 @@ from model import FCN8, build_vgg
 
 print("[+] Reading the dataset...")
 # Get the path of all images
-dataset_path = Path("/googledrive/My Drive/cityscape_small/")
+dataset_path = Path("data/")
 print("\n".join((p.as_posix() for p in dataset_path.iterdir())))
 
 gt_path = dataset_path / "gtFine_trainvaltest" / "gtFine"
@@ -77,9 +77,9 @@ val_steps = val_generator.__len__()
 
 print("[+] Creating the model...")
 # Creating the FCN8 model
-VGG_weights_path = Path("/googledrive/My Drive/pre_trained/"
+VGG_weights_path = Path("data/"
                         "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
-vgg = vgg = build_vgg(VGG_weights_path, 224, 224)
+vgg = build_vgg(VGG_weights_path, 224, 224)
 model = FCN8(vgg, 35, 224, 224)
 # model.summary()
 

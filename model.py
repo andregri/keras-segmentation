@@ -26,8 +26,7 @@ def build_vgg(weights_path, input_width=224, input_height=224):
 
     # Block2
     vgg.add(Conv2D(128, (3, 3), activation="relu", padding="same",
-                   name="block2_conv1", data_format=IMAGE_ORDERING,
-                   input_shape=(input_width, input_height, 3)))
+                   name="block2_conv1", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(128, (3, 3), activation="relu", padding="same",
                    name="block2_conv2", data_format=IMAGE_ORDERING))
     vgg.add(MaxPooling2D((2, 2), strides=(2, 2), name="block2_pool",
@@ -35,8 +34,7 @@ def build_vgg(weights_path, input_width=224, input_height=224):
 
     # Block3
     vgg.add(Conv2D(256, (3, 3), activation="relu", padding="same",
-                   name="block3_conv1", data_format=IMAGE_ORDERING,
-                   input_shape=(input_width, input_height, 3)))
+                   name="block3_conv1", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(256, (3, 3), activation="relu", padding="same",
                    name="block3_conv2", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(256, (3, 3), activation="relu", padding="same",
@@ -46,8 +44,7 @@ def build_vgg(weights_path, input_width=224, input_height=224):
 
     # Block4
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
-                   name="block4_conv1", data_format=IMAGE_ORDERING,
-                   input_shape=(input_width, input_height, 3)))
+                   name="block4_conv1", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
                    name="block4_conv2", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
@@ -57,8 +54,7 @@ def build_vgg(weights_path, input_width=224, input_height=224):
 
     # Block5
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
-                   name="block5_conv1", data_format=IMAGE_ORDERING,
-                   input_shape=(input_width, input_height, 3)))
+                   name="block5_conv1", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
                    name="block5_conv2", data_format=IMAGE_ORDERING))
     vgg.add(Conv2D(512, (3, 3), activation="relu", padding="same",
@@ -88,9 +84,11 @@ def FCN8(vgg, num_classes, input_width=224, input_height=224):
                          data_format=IMAGE_ORDERING))(fctoconv_1)
 
     # 2 times up-sampling
-    deconv1 = Conv2DTranspose(num_classes, kernel_size=(2, 2), strides=(2, 2),
-                              use_bias=False, data_format=IMAGE_ORDERING)
-    (fctoconv_2)
+    deconv1 = Conv2DTranspose(num_classes,
+                              kernel_size=(2, 2),
+                              strides=(2, 2),
+                              use_bias=False,
+                              data_format=IMAGE_ORDERING)(fctoconv_2)
 
     # 2 times up-sampling
     pool4 = vgg.get_layer("block4_pool").output
