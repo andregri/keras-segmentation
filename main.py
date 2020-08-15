@@ -99,7 +99,7 @@ if __name__ == "__main__":
     results = model.fit(
         train_generator,
         steps_per_epoch=train_steps,
-        epochs=1,
+        epochs=20,
         validation_data=val_generator,
         validation_steps=val_steps)
 

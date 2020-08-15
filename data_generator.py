@@ -28,11 +28,9 @@ class DataGenerator(Sequence):
         """Update indexes after each epoch if shuffle=True
         """
         # Assign an index (an integer number) to each pair.
-        strategy = tf.distribute.MirroredStrategy()
-        with strategy.scope():
-            self.indexes = np.arange(len(self.pairs))
-            if self.shuffle is True:
-                np.random.shuffle(self.indexes)
+        self.indexes = np.arange(len(self.pairs))
+        if self.shuffle is True:
+            tf.random.shuffle(self.indexes)
 
     def __len__(self):
         """Number of batches for epoch
@@ -56,16 +54,14 @@ class DataGenerator(Sequence):
         batch_x = []
         batch_y = []
 
-        strategy = tf.distribute.MirroredStrategy()
-        with strategy.scope():
-            for i in batch_indexes:
-                img = img_to_array(
-                    load_img(self.pairs[i][0], target_size=self.dim)) / 255
-                batch_x.append(img)
+        for i in batch_indexes:
+            img = img_to_array(
+                load_img(self.pairs[i][0], target_size=self.dim)) / 255
+            batch_x.append(img)
 
-                gt_img = img_to_array(
-                    load_img(self.pairs[i][1], target_size=self.dim))
-                class_img = to_categorical(gt_img[:, :, 0], num_classes=35)
-                batch_y.append(class_img)
+            gt_img = img_to_array(
+                load_img(self.pairs[i][1], target_size=self.dim))
+            class_img = to_categorical(gt_img[:, :, 0], num_classes=35)
+            batch_y.append(class_img)
 
         return np.array(batch_x), np.array(batch_y)
