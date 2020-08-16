@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.utils import Sequence
@@ -29,7 +30,7 @@ class DataGenerator(Sequence):
         # Assign an index (an integer number) to each pair.
         self.indexes = np.arange(len(self.pairs))
         if self.shuffle is True:
-            np.random.shuffle(self.indexes)
+            tf.random.shuffle(self.indexes)
 
     def __len__(self):
         """Number of batches for epoch
@@ -52,6 +53,7 @@ class DataGenerator(Sequence):
 
         batch_x = []
         batch_y = []
+
         for i in batch_indexes:
             img = img_to_array(
                 load_img(self.pairs[i][0], target_size=self.dim)) / 255
