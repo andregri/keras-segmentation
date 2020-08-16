@@ -5,6 +5,7 @@ from tensorflow.keras.optimizers import Adam
 # ReduceLROnPlateau, CSVLogger, TensorBoard
 
 from core.generator.dataset import Dataset
+from core.model.callbacks import Callbacks
 
 from pathlib import Path
 
