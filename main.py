@@ -4,12 +4,12 @@ from tensorflow.keras.optimizers import Adam
 # from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping,
 # ReduceLROnPlateau, CSVLogger, TensorBoard
 
-from data_generator import DataGenerator
-from utils import make_pair
+from core.generator.data_generator import DataGenerator
+from core.generator.generator_helper import make_pair
 
 from pathlib import Path
 
-from model import FCN8, build_vgg
+from core.model.model import FCN8, build_vgg
 
 
 if __name__ == "__main__":
@@ -111,4 +111,9 @@ if __name__ == "__main__":
         dim=(224, 224),
         shuffle=False)
 
-    res = model.evaluate(test_generator, verbose=2)
+    test_steps = test_generator.__len__()
+
+    res = model.evaluate(
+        test_generator,
+        steps=test_steps,
+        verbose=2)
