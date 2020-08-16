@@ -15,20 +15,17 @@ class TestSetup():
         self.dataset_path = Path(dataset_dir)
         self.pre_trained_path = Path(vgg_dir)
 
-    def setup_generators(self, n_train=None, n_val=None, n_test=None):
+    def parse_dataset(self, n_train=None, n_val=None, n_test=None):
+        gt_path = self.dataset_path / "gtFine_trainvaltest/gtFine"
+        img_path = self.dataset_path / "leftImg8bit_trainvaltest/leftImg8bit"
+
         # Get the path of all images
         print("[+] Reading the dataset...")
-
-        print("\n".join((p.as_posix() for p in self.dataset_path.iterdir())))
-
-        gt_path = self.dataset_path / "gtFine_trainvaltest" / "gtFine"
-        img_path = self.dataset_path / "leftImg8bit_trainvaltest" / "leftImg8bit"
 
         img_paths = {}
         label_paths = {}
         for key in ["train", "val", "test"]:
             img_paths[key] = [path for path in (img_path / key).rglob("*.png")]
-            # labelsId images have one channel and grey level represents the label id.
             label_paths[key] = [path for path in (
                 gt_path / key).rglob("*.png") if "labelIds" in path.name]
 
@@ -44,6 +41,23 @@ class TestSetup():
 
         for key in ["train", "val", "test"]:
             img_paths[key].sort(), label_paths[key].sort()
+
+        if n_train is not None:
+            img_paths["train"] = img_paths["train"][:n_train]
+            label_paths["train"] = label_paths["train"][:n_train]
+
+        if n_val is not None:
+            img_paths["val"] = img_paths["val"][:n_val]
+            label_paths["val"] = label_paths["val"][:n_val]
+
+        if n_test is not None:
+            img_paths["test"] = img_paths["test"][:n_test]
+            label_paths["test"] = label_paths["test"][:n_test]
+
+        return img_paths, label_paths
+
+    def setup_generators(self, n_train=None, n_val=None, n_test=None):
+        img_paths, label_paths = self.parse_dataset()
 
         # Create data pairs
         print("[+] Creating data pairs")
@@ -97,8 +111,8 @@ class TestSetup():
 
         print("[+] Creating the model...")
         # Creating the FCN8 model
-        VGG_weights_path = Path(
-            self.pre_trained_path / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
+        vgg_weight_h5 = "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5"
+        VGG_weights_path = Path(self.pre_trained_path / vgg_weight_h5)
         vgg = build_vgg(VGG_weights_path, 224, 224)
         model = FCN8(vgg, 35, 224, 224)
 

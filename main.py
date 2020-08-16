@@ -4,8 +4,7 @@ from tensorflow.keras.optimizers import Adam
 # from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping,
 # ReduceLROnPlateau, CSVLogger, TensorBoard
 
-from core.generator.data_generator import DataGenerator
-from core.generator.generator_helper import make_pair
+from core.generator.dataset import Dataset
 
 from pathlib import Path
 
@@ -49,36 +48,24 @@ if __name__ == "__main__":
     for key in ["train", "val", "test"]:
         img_paths[key].sort(), label_paths[key].sort()
 
-    print("[+] Creating data pairs")
-    # Create data pairs
-    data_pairs = {}
-    for key in ["train", "val", "test"]:
-        data_pairs[key] = make_pair(img_paths[key], label_paths[key])
+    # Create datasets
+    train_ds = Dataset(
+        img_paths=img_paths["train"],
+        label_paths=label_paths["train"],
+        batch_size=32,
+        buffer_size=1000,
+        seed=42,
+        augment=True
+    )
 
-    print(f"""
-    TRAIN: {len(data_pairs['train'])}, {len(data_pairs['train'])}
-    VAL:   {len(data_pairs['val'])}, {len(data_pairs['val'])}
-    TEST:  {len(data_pairs['test'])}, {len(data_pairs['test'])}
-    """)
-
-    print("[+] Creating data generators...")
-    # Create generators
-    train_generator = DataGenerator(pairs=data_pairs["train"],
-                                    batch_size=32,
-                                    dim=(224, 224),
-                                    shuffle=True)
-
-    train_steps = train_generator.__len__()
-    X, y = train_generator.__getitem__(1)
-    print(X.shape)
-    print(y.shape)
-
-    val_generator = DataGenerator(pairs=data_pairs["val"],
-                                  batch_size=16,
-                                  dim=(224, 224),
-                                  shuffle=True)
-
-    val_steps = val_generator.__len__()
+    val_ds = Dataset(
+        img_paths=img_paths["val"],
+        label_paths=label_paths["val"],
+        batch_size=16,
+        buffer_size=1000,
+        seed=42,
+        augment=False
+    )
 
     print("[+] Creating the model...")
     # Creating the FCN8 model
@@ -97,23 +84,24 @@ if __name__ == "__main__":
     print("[+] Training...")
     # Training the model
     results = model.fit(
-        train_generator,
-        steps_per_epoch=train_steps,
+        train_ds.ds,
+        steps_per_epoch=train_ds.steps,
         epochs=20,
-        validation_data=val_generator,
-        validation_steps=val_steps)
+        validation_data=val_ds.ds,
+        validation_steps=val_ds.steps)
 
     print("[+] Evaluate the model...")
     # Create the test generator and evaluate the model
-    test_generator = DataGenerator(
-        pairs=data_pairs["test"],
+    test_ds = Dataset(
+        img_paths=img_paths["test"],
+        label_paths=label_paths["test"],
         batch_size=16,
-        dim=(224, 224),
-        shuffle=False)
-
-    test_steps = test_generator.__len__()
+        buffer_size=1000,
+        seed=42,
+        augment=False
+    )
 
     res = model.evaluate(
-        test_generator,
-        steps=test_steps,
+        test_ds.ds,
+        steps=test_ds.steps,
         verbose=2)
