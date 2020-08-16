@@ -83,12 +83,15 @@ if __name__ == "__main__":
 
     print("[+] Training...")
     # Training the model
+    cb = Callbacks("data/chkpt/top_weights.h5", "data/logs/", "data/trainig.csv")
+
     results = model.fit(
         train_ds.ds,
         steps_per_epoch=train_ds.steps,
         epochs=20,
         validation_data=val_ds.ds,
-        validation_steps=val_ds.steps)
+        validation_steps=val_ds.steps,
+        callbacks=cb(checkpoint=True, tensorboard=True, csv=True))
 
     print("[+] Evaluate the model...")
     # Create the test generator and evaluate the model
