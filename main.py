@@ -3,7 +3,6 @@ import sys
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-from core.generator.data_generator import DataGenerator
 from core.generator.generator_helper import my_generator
 from core.model.callbacks import Callbacks
 
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     gt_path = dataset_path / "gtFine_trainvaltest/gtFine"
     img_path = dataset_path / "leftImg8bit_trainvaltest/leftImg8bit"
 
-    batch_size = 32
+    batch_size = 2
 
     img_train_generator = ImageDataGenerator(
         rescale=1./255,
@@ -105,8 +104,10 @@ if __name__ == "__main__":
         validation_steps=val_steps,
         callbacks=cb.callbacks)
 
-    date_str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    model.save_weights("last_epoch_weights"+date_str+".h5")
+    date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    filename = "last_epoch_weights"+date+".h5"
+    filepath = log_path / filename
+    model.save_weights(filepath)
 
     print("[+] Evaluate the model...")
     # Create the test generator and evaluate the model

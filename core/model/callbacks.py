@@ -41,7 +41,7 @@ class Callbacks():
 
         cb = TensorBoard(
             log_dir=self.tensorboard_dir,
-            histogram_freq=0,
+            histogram_freq=1,
             write_graph=True,
             write_images=False,
             update_freq="epoch",
