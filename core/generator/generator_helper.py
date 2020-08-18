@@ -1,3 +1,6 @@
+from tensorflow.keras.utils import to_categorical
+
+
 def make_pair(img_paths, label_paths):
     """Take a list of image paths and the list of corresponding label paths and
     return a list of tuples, each containing one image path and the
@@ -23,3 +26,12 @@ def make_pair(img_paths, label_paths):
             pairs.append(pair)
 
     return pairs
+
+
+def my_generator(img_gen, mask_gen):
+    gen = zip(img_gen, mask_gen)
+    for (img, mask) in gen:
+        mask = mask[:, :, :, 0]
+        mask = to_categorical(mask, num_classes=35)
+        print(mask.shape)
+        yield (img, mask)

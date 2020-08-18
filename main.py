@@ -1,15 +1,16 @@
 import sys
 
 from tensorflow.keras.optimizers import Adam
-# from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping,
-# ReduceLROnPlateau, CSVLogger, TensorBoard
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 from core.generator.data_generator import DataGenerator
-from core.generator.generator_helper import make_pair
+from core.generator.generator_helper import my_generator
 
 from pathlib import Path
 
 from core.model.model import FCN8, build_vgg
+
+import datetime
 
 
 if __name__ == "__main__":
@@ -19,66 +20,58 @@ if __name__ == "__main__":
     dataset_path = Path(sys.argv[1])
     pre_trained_dir = Path(sys.argv[1])
 
-    print("[+] Reading the dataset...")
-    # Get the path of all images
-    print("\n".join((p.as_posix() for p in dataset_path.iterdir())))
-
-    gt_path = dataset_path / "gtFine_trainvaltest" / "gtFine"
-    img_path = dataset_path / "leftImg8bit_trainvaltest" / "leftImg8bit"
-
-    img_paths = {}
-    label_paths = {}
-    for key in ["train", "val", "test"]:
-        img_paths[key] = [path for path in (img_path / key).rglob("*.png")]
-        # labelsId images have one channel and grey level represents the label
-        # id.
-        label_paths[key] = [
-            path for path in (gt_path / key).rglob("*.png")
-            if "labelIds" in path.name]
-
-    print(f"""
-    TRAIN: {len(img_paths['train'])}, {len(label_paths['train'])}
-    VAL:   {len(img_paths['val'])}, {len(label_paths['val'])}
-    TEST:  {len(img_paths['test'])}, {len(label_paths['test'])}
-    """)
-
-    for key in ["train", "val", "test"]:
-        assert len(img_paths[key]) == len(label_paths[key]), \
-            f"Number of {key} images and labels mismatch."
-
-    for key in ["train", "val", "test"]:
-        img_paths[key].sort(), label_paths[key].sort()
-
-    print("[+] Creating data pairs")
-    # Create data pairs
-    data_pairs = {}
-    for key in ["train", "val", "test"]:
-        data_pairs[key] = make_pair(img_paths[key], label_paths[key])
-
-    print(f"""
-    TRAIN: {len(data_pairs['train'])}, {len(data_pairs['train'])}
-    VAL:   {len(data_pairs['val'])}, {len(data_pairs['val'])}
-    TEST:  {len(data_pairs['test'])}, {len(data_pairs['test'])}
-    """)
-
     print("[+] Creating data generators...")
     # Create generators
-    train_generator = DataGenerator(pairs=data_pairs["train"],
-                                    batch_size=32,
-                                    dim=(224, 224),
-                                    shuffle=True)
+    gt_path = dataset_path / "gtFine_trainvaltest/gtFine"
+    img_path = dataset_path / "leftImg8bit_trainvaltest/leftImg8bit"
 
-    train_steps = train_generator.__len__()
-    X, y = train_generator.__getitem__(1)
-    print(X.shape)
-    print(y.shape)
+    img_train_generator = ImageDataGenerator(
+        rescale=1./255,
+        rotation_range=10,
+        horizontal_flip=True,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        shear_range=0.2,
+        zoom_range=0.2
+    ).flow_from_directory(
+        img_path / "train",
+        class_mode=None,
+        batch_size=16,
+        target_size=(224, 224),
+        seed=42)
 
-    val_generator = DataGenerator(pairs=data_pairs["val"],
-                                  batch_size=16,
-                                  dim=(224, 224),
-                                  shuffle=True)
+    mask_train_generator = ImageDataGenerator().flow_from_directory(
+        gt_path / "train",
+        class_mode=None,
+        batch_size=16,
+        target_size=(224, 224),
+        seed=42
+    )
 
-    val_steps = val_generator.__len__()
+    train_generator = my_generator(img_train_generator, mask_train_generator)
+    train_steps = len([x for x in (img_path/"train").rglob("*.png")]) // 16
+    print(train_steps)
+
+    img_val_generator = ImageDataGenerator(
+        rescale=1./255
+    ).flow_from_directory(
+        img_path / "val",
+        class_mode=None,
+        batch_size=16,
+        target_size=(224, 224),
+        seed=42)
+
+    mask_val_generator = ImageDataGenerator().flow_from_directory(
+        gt_path / "val",
+        class_mode=None,
+        batch_size=16,
+        target_size=(224, 224),
+        seed=42
+    )
+
+    val_generator = my_generator(img_val_generator, mask_val_generator)
+    val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // 16
+    print(val_steps)
 
     print("[+] Creating the model...")
     # Creating the FCN8 model
@@ -103,15 +96,31 @@ if __name__ == "__main__":
         validation_data=val_generator,
         validation_steps=val_steps)
 
+    date_str = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    model.save_weights("last_epoch_weights"+date_str+".h5")
+
     print("[+] Evaluate the model...")
     # Create the test generator and evaluate the model
-    test_generator = DataGenerator(
-        pairs=data_pairs["test"],
+    img_test_generator = ImageDataGenerator(
+        rescale=1./255
+    ).flow_from_directory(
+        img_path / "test",
+        class_mode=None,
         batch_size=16,
-        dim=(224, 224),
-        shuffle=False)
+        target_size=(224, 224),
+        seed=42)
 
-    test_steps = test_generator.__len__()
+    mask_test_generator = ImageDataGenerator().flow_from_directory(
+        gt_path / "test",
+        class_mode=None,
+        batch_size=16,
+        target_size=(224, 224),
+        seed=42
+    )
+
+    test_generator = my_generator(img_test_generator, mask_test_generator)
+    test_steps = len([x for x in (img_path/"test").rglob("*.png")]) // 16
+    print(test_steps)
 
     res = model.evaluate(
         test_generator,
