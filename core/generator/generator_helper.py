@@ -33,5 +33,4 @@ def my_generator(img_gen, mask_gen):
     for (img, mask) in gen:
         mask = mask[:, :, :, 0]
         mask = to_categorical(mask, num_classes=35)
-        print(mask.shape)
         yield (img, mask)

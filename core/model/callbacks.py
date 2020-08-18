@@ -1,10 +1,11 @@
-from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, CSVLogger
 
 
 class Callbacks():
-    def __init__(self, checkpoint_path, tensorboard_path):
+    def __init__(self, checkpoint_path, tensorboard_path, csv_path):
         self.chkpt_path = checkpoint_path
         self.tb_path = tensorboard_path
+        self.csv_path = csv_path
         self.callbacks = []
 
     def __call__(self, checkpoint, tensorboard):
@@ -35,6 +36,15 @@ class Callbacks():
             write_images=False,
             update_freq="epoch",
             profile_batch=2
+        )
+
+        return cb
+
+    def get_csv_callback(self):
+        cb = CSVLogger(
+            self.csv_path,
+            separator=',',
+            append=False
         )
 
         return cb
