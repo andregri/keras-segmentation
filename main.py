@@ -15,11 +15,12 @@ import datetime
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        raise ValueError("Usage: main.py dataset_path")
+    if len(sys.argv) != 3:
+        raise ValueError("Usage: main.py dataset_path log_path")
 
     dataset_path = Path(sys.argv[1])
     pre_trained_dir = Path(sys.argv[1])
+    log_path = Path(sys.argv[2])
 
     print("[+] Creating data generators...")
     # Create generators
@@ -57,20 +58,20 @@ if __name__ == "__main__":
     ).flow_from_directory(
         img_path / "val",
         class_mode=None,
-        batch_size=16,
+        batch_size=batch_size,
         target_size=(224, 224),
         seed=42)
 
     mask_val_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "val",
         class_mode=None,
-        batch_size=16,
+        batch_size=batch_size,
         target_size=(224, 224),
         seed=42
     )
 
     val_generator = my_generator(img_val_generator, mask_val_generator)
-    val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // 16
+    val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // batch_size
     print(val_steps)
 
     print("[+] Creating the model...")
@@ -91,9 +92,9 @@ if __name__ == "__main__":
     # Training the model
 
     cb = Callbacks(
-        pre_trained_dir / "top_weights.h5",
-        pre_trained_dir / "logs/",
-        pre_trained_dir / "training.csv"
+        checkpoint_dir=log_path / "checkpoint/",
+        tensorboard_dir=log_path / "tensorboard_log/",
+        csv_dir=log_path / "csv_log/"
     )
 
     results = model.fit(

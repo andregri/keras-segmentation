@@ -1,25 +1,33 @@
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard, CSVLogger
+import datetime
+import os
 
 
 class Callbacks():
-    def __init__(self, checkpoint_path, tensorboard_path, csv_path):
-        self.chkpt_path = checkpoint_path
-        self.tb_path = tensorboard_path
-        self.csv_path = csv_path
+    def __init__(self, checkpoint_dir, tensorboard_dir, csv_dir):
+        """All args are Path objects
+        """
+        self.checkpoint_dir = checkpoint_dir
+        self.tensorboard_dir = tensorboard_dir
+        self.csv_dir = csv_dir
         self.callbacks = []
+        self()
 
-    def __call__(self, checkpoint, tensorboard):
-        if checkpoint is True:
-            self.callbacks.append(self.get_checkpoint_callback())
-
-        if tensorboard is True:
-            self.callbacks.append(self.get_tensorboard_callback())
-
+    def __call__(self):
+        self.callbacks.append(self.get_checkpoint_callback())
+        self.callbacks.append(self.get_tensorboard_callback())
+        self.callbacks.append(self.get_csv_callback())
         return self.callbacks
 
     def get_checkpoint_callback(self):
+        date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = "best_accuracy_weights_" + date + ".h5"
+        filepath = self.checkpoint_dir / filename
+
+        create_dir(self.checkpoint_dir)
+
         cb = ModelCheckpoint(
-            filepath=self.chkpt_path,
+            filepath=filepath,
             monitor="val_accuracy",
             mode="max",
             save_weights_only=True,
@@ -29,8 +37,10 @@ class Callbacks():
         return cb
 
     def get_tensorboard_callback(self):
+        create_dir(self.tensorboard_dir)
+
         cb = TensorBoard(
-            log_dir=self.tb_path,
+            log_dir=self.tensorboard_dir,
             histogram_freq=0,
             write_graph=True,
             write_images=False,
@@ -41,10 +51,21 @@ class Callbacks():
         return cb
 
     def get_csv_callback(self):
+        date = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = "training_" + date + ".csv"
+        filepath = self.csv_dir / filename
+
+        create_dir(self.csv_dir)
+
         cb = CSVLogger(
-            self.csv_path,
+            filename=filepath,
             separator=',',
             append=False
         )
 
         return cb
+
+
+def create_dir(dir):
+    if not dir.exists():
+        os.mkdir(dir)
