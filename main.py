@@ -109,30 +109,3 @@ if __name__ == "__main__":
     filepath = log_path / filename
     model.save_weights(filepath)
 
-    print("[+] Evaluate the model...")
-    # Create the test generator and evaluate the model
-    img_test_generator = ImageDataGenerator(
-        rescale=1./255
-    ).flow_from_directory(
-        img_path / "test",
-        class_mode=None,
-        batch_size=16,
-        target_size=(224, 224),
-        seed=42)
-
-    mask_test_generator = ImageDataGenerator().flow_from_directory(
-        gt_path / "test",
-        class_mode=None,
-        batch_size=16,
-        target_size=(224, 224),
-        seed=42
-    )
-
-    test_generator = my_generator(img_test_generator, mask_test_generator)
-    test_steps = len([x for x in (img_path/"test").rglob("*.png")]) // 16
-    print(test_steps)
-
-    res = model.evaluate(
-        test_generator,
-        steps=test_steps,
-        verbose=2)
