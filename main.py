@@ -108,4 +108,3 @@ if __name__ == "__main__":
     filename = "last_epoch_weights"+date+".h5"
     filepath = log_path / filename
     model.save_weights(filepath)
-
