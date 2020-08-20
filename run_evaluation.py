@@ -5,6 +5,8 @@ import numpy as np
 from core.generator.generator_helper import my_generator
 from core.model.model import FCN8, build_vgg
 from matplotlib import pyplot as plt
+from core.preprocessing.cityscape.helpers import color_gt_image, IoU
+from core.preprocessing.cityscape.cityscapes_labels import labels
 
 
 if __name__ == "__main__":
@@ -55,12 +57,16 @@ if __name__ == "__main__":
     onehot_predictions = model.predict(img)
     labels_prediction = np.argmax(onehot_predictions, axis=-1)
 
-    for id in range(5):
+    id2name = {label.id: label.name for label in labels}
+    id2color = {label.id: label.color for label in labels}
+    for i in [4]:
+        IoU(labels_mask[i], labels_prediction[i], id2name)
+
         _, axs = plt.subplots(1, 3)
         axs = axs.flatten()
 
-        axs[0].imshow(img[id])
-        axs[1].imshow(labels_mask[id])
-        axs[2] = plt.imshow(labels_prediction[id])
+        axs[0].imshow(img[i])
+        axs[1].imshow(color_gt_image(labels_mask[i], id2color)/255.0)
+        axs[2].imshow(color_gt_image(labels_prediction[i], id2color)/255.0)
 
         plt.show()
