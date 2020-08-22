@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     # Settings
     batch_size = 2
-    n_classes = 2
+    n_classes = 1
     traffic_light_class_id = 19
     seed = 42
 

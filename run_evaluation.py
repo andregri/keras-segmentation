@@ -17,12 +17,16 @@ if __name__ == "__main__":
     pre_trained_dir = Path(sys.argv[1])
     weight_path = Path(sys.argv[2])
 
+    n_classes = 2
+    traffic_light_class_id = 19
+    batch_size = 5
+
     print("[+] Create the model and load the weights")
     # Crete the model
     VGG_weights_path = Path(
         pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
     vgg = build_vgg(VGG_weights_path, 224, 224)
-    model = FCN8(vgg, 35, 224, 224)
+    model = FCN8(vgg, n_classes, 224, 224)
     model.load_weights(weight_path.as_posix())
 
     print("[+] Creating data generators...")
@@ -35,38 +39,33 @@ if __name__ == "__main__":
     ).flow_from_directory(
         img_path / "val",
         class_mode=None,
-        batch_size=16,
+        batch_size=batch_size,
         target_size=(224, 224),
         seed=42)
 
     mask_test_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "val",
         class_mode=None,
-        batch_size=16,
+        batch_size=batch_size,
         target_size=(224, 224),
         seed=42
     )
 
-    test_generator = my_generator(img_test_generator, mask_test_generator)
-    test_steps = len([x for x in (img_path/"train").rglob("*.png")]) // 16
+    test_generator = my_generator(img_test_generator, mask_test_generator, traffic_light_class_id)
+    test_steps = len([x for x in (img_path/"train").rglob("*.png")]) // batch_size
     print(test_steps)
 
     print("[+] Predict some images...")
-    (img, mask) = next(test_generator)  # batch of 16 images
-    labels_mask = np.argmax(mask, axis=-1)
+    (img, mask) = next(test_generator)  # batch of images
     onehot_predictions = model.predict(img)
-    labels_prediction = np.argmax(onehot_predictions, axis=-1)
+    print(onehot_predictions.shape)
 
-    id2name = {label.id: label.name for label in labels}
-    id2color = {label.id: label.color for label in labels}
     for i in [4]:
-        IoU(labels_mask[i], labels_prediction[i], id2name)
-
         _, axs = plt.subplots(1, 3)
         axs = axs.flatten()
 
         axs[0].imshow(img[i])
-        axs[1].imshow(color_gt_image(labels_mask[i], id2color)/255.0)
-        axs[2].imshow(color_gt_image(labels_prediction[i], id2color)/255.0)
+        axs[1].imshow(mask[i, :, :, 1])
+        axs[2].imshow(onehot_predictions[i, :, :, 1])
 
         plt.show()
