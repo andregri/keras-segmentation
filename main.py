@@ -8,7 +8,7 @@ from core.model.callbacks import Callbacks
 
 from pathlib import Path
 
-from core.model.model import FCN8, build_vgg
+from core.model.model import FCN8
 
 import datetime
 
@@ -26,6 +26,7 @@ if __name__ == "__main__":
     n_classes = 1
     traffic_light_class_id = 19
     seed = 42
+    input_shape = (2018, 1024, 3)
 
     print("[+] Creating data generators...")
     # Create generators
@@ -41,14 +42,14 @@ if __name__ == "__main__":
         img_path / "train",
         class_mode=None,
         batch_size=batch_size,
-        target_size=(224, 224),
+        #target_size=(224, 224),
         seed=seed)
 
     mask_train_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "train",
         class_mode=None,
         batch_size=batch_size,
-        target_size=(224, 224),
+        #target_size=(224, 224),
         seed=seed)
 
     train_generator = my_generator(
@@ -66,14 +67,14 @@ if __name__ == "__main__":
         img_path / "val",
         class_mode=None,
         batch_size=batch_size,
-        target_size=(224, 224),
+        #target_size=(224, 224),
         seed=seed)
 
     mask_val_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "val",
         class_mode=None,
         batch_size=batch_size,
-        target_size=(224, 224),
+        #target_size=(224, 224),
         seed=seed
     )
 
@@ -88,10 +89,10 @@ if __name__ == "__main__":
 
     print("[+] Creating the model...")
     # Creating the FCN8 model
-    VGG_weights_path = Path(
-        pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
-    vgg = build_vgg(VGG_weights_path, 224, 224)
-    model = FCN8(vgg, n_classes, 224, 224)
+    # VGG_weights_path = Path(
+    #     pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
+    # vgg = build_vgg(VGG_weights_path, 224, 224)
+    model = FCN8(n_classes, input_shape)
     # model.summary()
 
     print("[+] Compile the model...")
