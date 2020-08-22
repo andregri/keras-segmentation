@@ -117,7 +117,7 @@ def test_my_generator():
     my_gen = my_generator(img_generator, mask_generator, 19)  # 19: traffic lights
     img, mask = next(my_gen)
     assert img.shape == (4, 224, 224, 3), "Error img"
-    assert mask.shape == (4, 224, 224, 1), "Error mask: shape is " + str(mask.shape)
+    assert mask.shape == (4, 224, 224, 2), "Error mask: shape is " + str(mask.shape)
 
     _, axs = plt.subplots(1, 2)
     axs = axs.flatten()

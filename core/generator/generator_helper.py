@@ -51,9 +51,7 @@ def mask_to_oneclass(mask_batch, train_id):
     mask_batch[mask_batch != train_id] = 0
 
     mask_batch /= train_id  # normalize
-    # onehot_batch = to_categorical(mask_batch)
-
-    onehot_batch = np.expand_dims(mask_batch, axis=-1)
+    onehot_batch = to_categorical(mask_batch)
 
     return onehot_batch
 
