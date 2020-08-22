@@ -5,3 +5,13 @@ Local usage:
 
 Colab usage:
 `see colab notebook`
+
+# TODO list
+
+- [] refactor unit tests structure
+
+- [] use the test images for training
+
+- [] change the input size
+
+- [] add a folder with a very small portion of the dataset

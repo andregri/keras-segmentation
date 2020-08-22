@@ -21,34 +21,42 @@ if __name__ == "__main__":
     pre_trained_dir = Path(sys.argv[1])
     log_path = Path(sys.argv[2])
 
+    # Settings
+    batch_size = 2
+    n_classes = 2
+    traffic_light_class_id = 19
+    seed = 42
+
     print("[+] Creating data generators...")
     # Create generators
     gt_path = dataset_path / "gtFine_trainvaltest/gtFine"
     img_path = dataset_path / "leftImg8bit_trainvaltest/leftImg8bit"
 
-    batch_size = 2
-
     img_train_generator = ImageDataGenerator(
         rescale=1./255,
         rotation_range=10,
         horizontal_flip=True,
-        zoom_range=0.2
+        zoom_range=0.2   # TODO: brightness
     ).flow_from_directory(
         img_path / "train",
         class_mode=None,
         batch_size=batch_size,
         target_size=(224, 224),
-        seed=42)
+        seed=seed)
 
     mask_train_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "train",
         class_mode=None,
         batch_size=batch_size,
         target_size=(224, 224),
-        seed=42
+        seed=seed)
+
+    train_generator = my_generator(
+        img_train_generator,
+        mask_train_generator,
+        traffic_light_class_id
     )
 
-    train_generator = my_generator(img_train_generator, mask_train_generator)
     train_steps = len([x for x in (img_path/"train").rglob("*.png")]) // batch_size
     print(train_steps)
 
@@ -59,17 +67,22 @@ if __name__ == "__main__":
         class_mode=None,
         batch_size=batch_size,
         target_size=(224, 224),
-        seed=42)
+        seed=seed)
 
     mask_val_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "val",
         class_mode=None,
         batch_size=batch_size,
         target_size=(224, 224),
-        seed=42
+        seed=seed
     )
 
-    val_generator = my_generator(img_val_generator, mask_val_generator)
+    val_generator = my_generator(
+        img_val_generator,
+        mask_val_generator,
+        traffic_light_class_id
+    )
+
     val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // batch_size
     print(val_steps)
 
@@ -78,7 +91,7 @@ if __name__ == "__main__":
     VGG_weights_path = Path(
         pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
     vgg = build_vgg(VGG_weights_path, 224, 224)
-    model = FCN8(vgg, 35, 224, 224)
+    model = FCN8(vgg, n_classes, 224, 224)
     # model.summary()
 
     print("[+] Compile the model...")

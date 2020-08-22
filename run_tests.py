@@ -1,5 +1,5 @@
-from tests.test_fit import test_callbacks
+from tests.test_generators import test_my_generator
 
 
 if __name__ == "__main__":
-    test_callbacks()
+    test_my_generator()

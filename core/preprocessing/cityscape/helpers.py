@@ -46,8 +46,7 @@ def IoU(true_label_mask, pred_label_mask, id2name):
         FN = np.sum((true_label_mask == i) & (pred_label_mask != i))
         IoU = TP / float(FN + TP + FP)
         IoUs.append(IoU)
-        print(f"{id2name[i]:22}:\t"
-              "#TP={TP:6},\t#FP={FP:6},\t#FN={FN:6},\tIoU={IoU:4.3f}")
+        print(f"{id2name[i]:22}:\t#TP={TP:6},\t#FP={FP:6},\t#FN={FN:6},\tIoU={IoU:4.3f}")
 
     mIoU = np.mean(IoUs)
     print(f"mean IoU: {mIoU:4.3f}")
