@@ -40,7 +40,7 @@ class Callbacks():
         create_dir(self.tensorboard_dir)
 
         cb = TensorBoard(
-            log_dir=self.tensorboard_dir,
+            log_dir=self.tensorboard_dir.as_posix(),
             histogram_freq=1,
             write_graph=True,
             write_images=False,

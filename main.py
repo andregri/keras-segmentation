@@ -1,5 +1,6 @@
 import sys
 
+import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         img_path / "train",
         class_mode=None,
         batch_size=batch_size,
-        #target_size=(224, 224),
+        target_size=(width, height),
         seed=seed)
 
     mask_train_generator = ImageDataGenerator(
@@ -56,7 +57,7 @@ if __name__ == "__main__":
         gt_path / "train",
         class_mode=None,
         batch_size=batch_size,
-        #target_size=(224, 224),
+        target_size=(width, height),
         seed=seed)
 
     train_generator = my_generator(
@@ -74,14 +75,14 @@ if __name__ == "__main__":
         img_path / "val",
         class_mode=None,
         batch_size=batch_size,
-        #target_size=(224, 224),
+        target_size=(width, height),
         seed=seed)
 
     mask_val_generator = ImageDataGenerator().flow_from_directory(
         gt_path / "val",
         class_mode=None,
         batch_size=batch_size,
-        #target_size=(224, 224),
+        target_size=(width, height),
         seed=seed
     )
 
@@ -98,14 +99,20 @@ if __name__ == "__main__":
     # Creating the FCN8 model
     VGG_weights_path = Path(
         pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
-    vgg = build_vgg(VGG_weights_path, width, height)
+    # vgg = build_vgg(VGG_weights_path, width, height)
+    vgg = tf.keras.applications.VGG16(
+      include_top=False,
+      weights="imagenet",
+      input_tensor=None,
+      input_shape=(width, height, 3)
+    )
     model = FCN8(vgg, n_classes, width, height)
     # model.summary()
 
     print("[+] Compile the model...")
     model.compile(
         optimizer=Adam(learning_rate=0.001),
-        loss="categorical_crossentropy",
+        loss="binary_crossentropy",
         metrics=["accuracy"])
 
     print("[+] Training...")

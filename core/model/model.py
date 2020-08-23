@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Conv2DTranspose,\
     Activation, Add
 
 
-def build_vgg(weights_path, input_width=224, input_height=224):
+def build_vgg(weights_path, input_width, input_height):
     # input_height and width must be devisible by 32 because maxpooling with
     # filter size = (2,2) is operated 5 times, which makes the input_height and
     # width 2^5 = 32 times smaller
