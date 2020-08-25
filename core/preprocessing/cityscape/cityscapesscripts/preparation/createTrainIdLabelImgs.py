@@ -28,7 +28,7 @@ from cityscapesscripts.helpers.csHelpers import printError
 from json2labelImg import json2labelImg
 
 # The main method
-def main():
+def main(cityscapesPath):
     # Where to look for Cityscapes
     if 'CITYSCAPES_DATASET' in os.environ:
         cityscapesPath = os.environ['CITYSCAPES_DATASET']
@@ -77,4 +77,8 @@ def main():
 
 # call the main
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        raise ValueError("Usage: image.py cityscapes_root_dir")
+    
+    cityscapesPath = sys.argv[1]
+    main(cityscapesPath)
