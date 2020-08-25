@@ -3,6 +3,7 @@ import sys
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from matplotlib import pyplot as plt
 
 from core.generator.generator_helper import my_generator
 from core.model.callbacks import Callbacks
@@ -25,10 +26,10 @@ if __name__ == "__main__":
     # Settings
     batch_size = 16
     n_classes = 1
-    traffic_light_class_id = 19
+    # traffic_light_class_id = 19
     seed = 42
-    width = 2048
-    height = 1024
+    width = 640
+    height = 640
 
     print("[+] Creating data generators...")
 
@@ -50,6 +51,7 @@ if __name__ == "__main__":
         seed=seed)
 
     mask_train_generator = ImageDataGenerator(
+        rescale=1./218,
         rotation_range=10,
         horizontal_flip=True,
         zoom_range=0.2,
@@ -66,6 +68,13 @@ if __name__ == "__main__":
         mask_train_generator
     )
 
+    (img, mask) = next(train_generator)
+    _, axs = plt.subplots(1, 2)
+    axs = axs.flatten()
+    axs[0].imshow(img[0])
+    axs[1].imshow(mask[0,:,:,0])
+    plt.show()
+
     n_train_img = len([x for x in (img_path/"train").rglob("*.png")])
     train_steps = n_train_img // batch_size
     print(f"Train steps: {train_steps}")
@@ -80,7 +89,9 @@ if __name__ == "__main__":
         target_size=(width, height),
         seed=seed)
 
-    mask_val_generator = ImageDataGenerator().flow_from_directory(
+    mask_val_generator = ImageDataGenerator(
+        rescale=1./218
+    ).flow_from_directory(
         gt_path / "val",
         class_mode=None,
         batch_size=batch_size,
