@@ -10,7 +10,7 @@ from core.model.callbacks import Callbacks
 
 from pathlib import Path
 
-from core.model.model import FCN8
+from core.model.model import FCN8, build_vgg
 
 import datetime
 
@@ -112,13 +112,7 @@ if __name__ == "__main__":
     print("[+] Creating the model...")
     VGG_weights_path = Path(
         pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
-    # vgg = build_vgg(VGG_weights_path, width, height)
-    vgg = tf.keras.applications.VGG16(
-      include_top=False,
-      weights="imagenet",
-      input_tensor=None,
-      input_shape=(width, height, 3)
-    )
+    vgg = build_vgg(VGG_weights_path, width, height)
     model = FCN8(vgg, n_classes, width, height)
     # model.summary()
 
