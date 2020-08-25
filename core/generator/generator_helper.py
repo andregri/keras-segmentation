@@ -58,9 +58,9 @@ def mask_to_oneclass(mask_batch, train_id):
     return onehot_batch
 
 
-def my_generator(img_gen, mask_gen, train_id):
+def my_generator(img_gen, mask_gen):
     gen = zip(img_gen, mask_gen)
     for (img, mask) in gen:
-        mask = mask[:, :, :, 0]
-        mask = mask_to_oneclass(mask, train_id)
+        mask = mask[:, :, :, 0:1]
+        #mask = mask_to_oneclass(mask, train_id)
         yield (img, mask)

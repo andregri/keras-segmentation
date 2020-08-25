@@ -23,7 +23,7 @@ if __name__ == "__main__":
     log_path = Path(sys.argv[2])
 
     # Settings
-    batch_size = 2
+    batch_size = 16
     n_classes = 1
     traffic_light_class_id = 19
     seed = 42
@@ -62,8 +62,7 @@ if __name__ == "__main__":
 
     train_generator = my_generator(
         img_train_generator,
-        mask_train_generator,
-        traffic_light_class_id
+        mask_train_generator
     )
 
     train_steps = len([x for x in (img_path/"train").rglob("*.png")]) // batch_size
@@ -88,8 +87,7 @@ if __name__ == "__main__":
 
     val_generator = my_generator(
         img_val_generator,
-        mask_val_generator,
-        traffic_light_class_id
+        mask_val_generator
     )
 
     val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // batch_size
