@@ -9,7 +9,7 @@ from core.model.callbacks import Callbacks
 
 from pathlib import Path
 
-from core.model.model import FCN8, build_vgg
+from core.model.model import FCN8
 
 import datetime
 
@@ -31,10 +31,11 @@ if __name__ == "__main__":
     height = 1024
 
     print("[+] Creating data generators...")
-    # Create generators
+
     gt_path = dataset_path / "gtFine_trainvaltest/gtFine"
     img_path = dataset_path / "leftImg8bit_trainvaltest/leftImg8bit"
 
+    # Create generators for training
     img_train_generator = ImageDataGenerator(
         rescale=1./255,
         rotation_range=10,
@@ -65,9 +66,11 @@ if __name__ == "__main__":
         mask_train_generator
     )
 
-    train_steps = len([x for x in (img_path/"train").rglob("*.png")]) // batch_size
-    print(train_steps)
+    n_train_img = len([x for x in (img_path/"train").rglob("*.png")])
+    train_steps = n_train_img // batch_size
+    print(f"Train steps: {train_steps}")
 
+    # Create generators for validating
     img_val_generator = ImageDataGenerator(
         rescale=1./255
     ).flow_from_directory(
@@ -90,11 +93,12 @@ if __name__ == "__main__":
         mask_val_generator
     )
 
-    val_steps = len([x for x in (img_path/"val").rglob("*.png")]) // batch_size
-    print(val_steps)
+    n_val_img = len([x for x in (img_path/"val").rglob("*.png")])
+    val_steps = n_val_img // batch_size
+    print(f"Validation steps: {val_steps}")
 
-    print("[+] Creating the model...")
     # Creating the FCN8 model
+    print("[+] Creating the model...")
     VGG_weights_path = Path(
         pre_trained_dir / "vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5")
     # vgg = build_vgg(VGG_weights_path, width, height)
@@ -113,9 +117,8 @@ if __name__ == "__main__":
         loss="binary_crossentropy",
         metrics=["accuracy"])
 
-    print("[+] Training...")
     # Training the model
-
+    print("[+] Training...")
     cb = Callbacks(
         checkpoint_dir=log_path / "checkpoint/",
         tensorboard_dir=log_path / "tensorboard_log/",
@@ -130,6 +133,7 @@ if __name__ == "__main__":
         validation_steps=val_steps,
         callbacks=cb.callbacks)
 
+    # Saving the model
     date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = "last_epoch_weights"+date+".h5"
     filepath = log_path / filename

@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 
 from tqdm import trange
@@ -9,8 +10,6 @@ from tensorflow.keras.preprocessing.image import (
 )
 from matplotlib import pyplot as plt
 import numpy as np
-
-from cityscapes_labels import labels
 
 
 def keep_trainId_gt(cityscapes_dir: Path) -> None:
@@ -23,7 +22,8 @@ def keep_trainId_gt(cityscapes_dir: Path) -> None:
     """
     gt_dir = cityscapes_dir / "gtFine_trainvaltest" / "gtFine"
     if not gt_dir.is_dir():
-        raise ValueError("[-] The path provided is not a cityscapes directory.")
+        raise ValueError("[-] The path provided is not"
+                         " a cityscapes directory.")
 
     print("[+] Remove useless gt images...")
     tot = count_files(gt_dir, "png")
@@ -162,7 +162,6 @@ def show_oneclass_pair(img_path: Path, mask_path: Path):
     """
     img = img_to_array(load_img(img_path))  # (h,w,3)
     original_mask = img_to_array(load_img(mask_path))  # (h,w,3)
-    mask = original_mask[:, :, 0]  # (h,w)
 
     _, axs = plt.subplots(1, 2, figsize=(14, 7))
     axs = axs.flatten()
@@ -171,12 +170,6 @@ def show_oneclass_pair(img_path: Path, mask_path: Path):
     axs[0].imshow(img / 255.0)
     axs[0].set_title(img_path.stem)
     axs[0].set_xlabel(img.shape)
-
-    # Color the mask
-    # id2color = {label.id: label.color for label in labels}
-    # colored_mask = np.zeros(shape=(mask.shape[0], mask.shape[1], 3))
-    # for id, color in id2color.items():
-    #     colored_mask[mask == id] = color  # (h,w,3)
 
     # Display the mask
     axs[1].imshow(original_mask / 255.0)
@@ -187,7 +180,11 @@ def show_oneclass_pair(img_path: Path, mask_path: Path):
 
 
 if __name__ == "__main__":
-    path = Path("C:/Users/andre/Documents/Progetti-GitHub/keras-segmentation/data/traffic_light_dataset")
+    if len(sys.argv) != 2:
+        raise ValueError("Usage: image.py cityscapes_root_dir")
+
+    cityscapes_root_dir = sys.argv[1]
+    path = Path(cityscapes_root_dir)
     target_shape = (640, 640)
 
     # Check that the number of images and masks matches:
@@ -198,13 +195,15 @@ if __name__ == "__main__":
     masks_path = path / "gtFine_trainvaltest" / "gtFine"
     n_all_masks = count_files(masks_path, "png")
     print(f"Number of masks: {n_all_masks}")
-    # assert n_imgs*3 == n_all_masks, "[-] Error, the number of images and masks don't match."
+    assert n_imgs*4 == n_all_masks, \
+        "[-] Error, the number of images and masks don't match."
 
     # Remove the masks that are not labelIds and check that there are as many
     # masks as images.
     keep_trainId_gt(path)
     n_masks = count_files(masks_path, "png")
-    assert n_imgs == n_masks, "[-] Error, the number of images and masks don't match."
+    assert n_imgs == n_masks, \
+        "[-] Error, the number of images and masks don't match."
 
     # Show an image and its mask.
     pair_gen = pair_generator(path)
